@@ -5,26 +5,13 @@ import {
   createMasonryCellPositioner,
   Masonry,
   MasonryCellProps,
+  WindowScroller,
 } from 'react-virtualized';
 
-import imageData from '../../data/images.json';
+import { GalleryThumbnail } from '../GalleryThumbnail/GalleryThumbnail';
+
 const THUMBNAIL_WIDTH = 220;
 const GUTTER_WIDTH = 10;
-
-interface IImageItem {
-  download_url: string;
-  width: number;
-  height: number;
-  author: string;
-}
-
-// Array of images with authors
-const list: IImageItem[] = imageData.map((datum) => {
-  const ratio = datum.width / datum.height;
-  datum.width = THUMBNAIL_WIDTH;
-  datum.height = datum.width / ratio;
-  return datum;
-});
 
 // Default sizes help Masonry decide how many images to batch-measure
 const cache = new CellMeasurerCache({
@@ -41,54 +28,66 @@ const cellPositioner = createMasonryCellPositioner({
   spacer: GUTTER_WIDTH,
 });
 
-function cellRenderer({ index, key, parent, style }: MasonryCellProps) {
-  const datum = list[index];
-
-  return (
-    <CellMeasurer cache={cache} index={index} key={key} parent={parent}>
-      <div style={style}>
-        <figure style={{ margin: 0 }}>
-          <img
-            src={datum.download_url}
-            style={{
-              background: 'gray',
-              height: datum.height,
-              width: datum.width,
-            }}
-            alt={`by ${datum.author}`}
-          />
-          <figcaption>{datum.author}</figcaption>
-        </figure>
-      </div>
-    </CellMeasurer>
-  );
-}
-
 interface IMasonryDimensions {
   width: number;
   height: number;
 }
-const Gallery: React.FC = () => {
+
+const calculateMasonrySettings = () => {
+  const columnCount = Math.floor(window.innerWidth / (THUMBNAIL_WIDTH + GUTTER_WIDTH));
+  const masonryWidth = columnCount * (THUMBNAIL_WIDTH + GUTTER_WIDTH);
+  const masonryHeight = window.innerHeight - 84;
+  return {
+    columnCount,
+    masonryWidth,
+    masonryHeight,
+  };
+};
+
+interface IProps {
+  imageData: IImageItem[];
+}
+
+const Gallery: React.FC<IProps> = ({ imageData }: IProps) => {
+  const { masonryWidth, masonryHeight } = calculateMasonrySettings();
   const [masonryDimensions, setMasonryDimensions] = useState<IMasonryDimensions>({
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: masonryWidth,
+    height: masonryHeight,
   });
+
+  // Array of images with authors
+  const list: IImageItem[] = imageData.map((item) => {
+    const ratio = item.width / item.height;
+    item.width = THUMBNAIL_WIDTH;
+    item.height = Math.floor(item.width / ratio);
+    return item;
+  });
+
+  function cellRenderer({ index, key, parent, style }: MasonryCellProps) {
+    const item = list[index];
+
+    return (
+      <CellMeasurer cache={cache} index={index} key={key} parent={parent}>
+        <div style={style}>
+          <GalleryThumbnail imageDetails={item}></GalleryThumbnail>
+        </div>
+      </CellMeasurer>
+    );
+  }
 
   const masonryRef = useRef<Masonry>(null);
   useEffect(() => {
     const resizeHandler = () => {
-      const columnCount = Math.floor(window.innerWidth / (THUMBNAIL_WIDTH + GUTTER_WIDTH));
+      const { columnCount, masonryWidth, masonryHeight } = calculateMasonrySettings();
       cellPositioner.reset({
         columnCount,
         columnWidth: THUMBNAIL_WIDTH,
         spacer: GUTTER_WIDTH,
       });
 
-      console.log(window.innerHeight);
-
       setMasonryDimensions({
-        width: columnCount * (THUMBNAIL_WIDTH + GUTTER_WIDTH),
-        height: window.innerHeight,
+        width: masonryWidth,
+        height: masonryHeight,
       });
 
       if (masonryRef.current) {
@@ -100,19 +99,27 @@ const Gallery: React.FC = () => {
   }, [masonryRef]);
 
   return (
-    <Masonry
-      style={{
-        margin: '0 auto',
-      }}
-      ref={masonryRef}
-      autoHeight={false}
-      cellCount={list.length}
-      cellMeasurerCache={cache}
-      cellPositioner={cellPositioner}
-      cellRenderer={cellRenderer}
-      height={masonryDimensions.height}
-      width={masonryDimensions.width}
-    />
+    <WindowScroller>
+      {({ height, isScrolling, onChildScroll, scrollTop }) => (
+        <Masonry
+          style={{
+            margin: '10px auto',
+            outline: 'none',
+          }}
+          autoHeight
+          height={height}
+          ref={masonryRef}
+          isScrolling={isScrolling}
+          onScroll={onChildScroll}
+          scrollTop={scrollTop}
+          cellCount={list.length}
+          cellMeasurerCache={cache}
+          cellPositioner={cellPositioner}
+          cellRenderer={cellRenderer}
+          width={masonryDimensions.width}
+        />
+      )}
+    </WindowScroller>
   );
 };
 

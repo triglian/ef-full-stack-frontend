@@ -1,8 +1,8 @@
 // adapted from https://jasonwatmore.com/post/2019/04/06/react-jwt-authentication-tutorial-example#authentication-service-js
-
 import { BehaviorSubject } from 'rxjs';
 
 import { config } from '../config';
+import { handleResponse } from './utils';
 
 const localStorageCurrentUser = localStorage.getItem('currentUser');
 const currentUserSubject = localStorageCurrentUser
@@ -18,24 +18,6 @@ export const authenticationService = {
     return currentUserSubject.value;
   },
 };
-
-function handleResponse(response: Response) {
-  return response.text().then((text) => {
-    const data = text && JSON.parse(text);
-    if (!response.ok) {
-      if ([401, 403].indexOf(response.status) !== -1) {
-        // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
-        logout();
-        window.location.reload(true);
-      }
-
-      const error = (data && data.message) || response.statusText;
-      return Promise.reject(error);
-    }
-
-    return data;
-  });
-}
 
 function login(email: string, password: string) {
   const requestOptions = {

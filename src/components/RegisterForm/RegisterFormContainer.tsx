@@ -1,4 +1,4 @@
-import React, { Fragment, ChangeEvent } from 'react';
+import React, { Fragment, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Typography from '@material-ui/core/Typography';
@@ -6,9 +6,9 @@ import Container from '@material-ui/core/Container';
 import { Formik, FormikActions } from 'formik';
 import * as Yup from 'yup';
 
-import { RegisterFormComponent, RegisterFormValues } from './RegisterFormComponent';
-import { authenticationService } from '../../services/authentication.service';
-import { RouterProps } from 'react-router';
+import { RegisterFormComponent } from './RegisterFormComponent';
+import { authenticationService } from '../../services/';
+import { RouterProps, Redirect } from 'react-router';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -40,6 +40,7 @@ const validationSchema = Yup.object({
 });
 
 const RegisterFormContainer: React.FC<RouterProps> = ({ history }) => {
+  const [wasRegistrationSuccessful, setWasRegistrationSuccessful] = useState(false);
   const classes = useStyles();
   const initialValues = {
     name: '',
@@ -48,20 +49,15 @@ const RegisterFormContainer: React.FC<RouterProps> = ({ history }) => {
     confirmPassword: '',
   };
 
-  if (authenticationService.currentUserValue) {
-    history.push('/');
-  }
-
   const doRegister = async (
     { name, email, password }: RegisterFormValues,
     { setStatus, setSubmitting }: FormikActions<RegisterFormValues>
   ) => {
     setStatus();
     try {
-      const user = await authenticationService.register(name, email, password);
-      history.push({ pathname: '/' });
+      await authenticationService.register(name, email, password);
+      setWasRegistrationSuccessful(true);
     } catch (error) {
-      console.log(error);
       setSubmitting(false);
       setStatus(error);
     }
@@ -69,17 +65,23 @@ const RegisterFormContainer: React.FC<RouterProps> = ({ history }) => {
 
   return (
     <Fragment>
-      <CssBaseline />
-      <Container maxWidth="sm" className={classes.container}>
-        <Typography component="div">
-          <Formik
-            initialValues={initialValues}
-            onSubmit={doRegister}
-            validationSchema={validationSchema}
-            render={(props) => <RegisterFormComponent {...props} />}
-          />
-        </Typography>
-      </Container>
+      {!authenticationService.currentUserValue && !wasRegistrationSuccessful ? (
+        <Fragment>
+          <CssBaseline />
+          <Container maxWidth="sm" className={classes.container}>
+            <Typography component="div">
+              <Formik
+                initialValues={initialValues}
+                onSubmit={doRegister}
+                validationSchema={validationSchema}
+                render={(props) => <RegisterFormComponent {...props} />}
+              />
+            </Typography>
+          </Container>
+        </Fragment>
+      ) : (
+        <Redirect to="/" />
+      )}
     </Fragment>
   );
 };

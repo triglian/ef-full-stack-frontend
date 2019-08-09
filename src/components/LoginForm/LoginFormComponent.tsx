@@ -24,11 +24,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export interface LoginFormValues {
-  email: string;
-  password: string;
-}
-
 type fieldNamesType = 'email' | 'password';
 
 const LoginFormComponent: React.FC<FormikProps<LoginFormValues>> = ({

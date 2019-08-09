@@ -24,13 +24,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export interface RegisterFormValues {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
-
 type fieldNamesType = 'name' | 'email' | 'password' | 'confirmPassword';
 
 const RegisterFormComponent: React.FC<FormikProps<RegisterFormValues>> = ({

@@ -6,7 +6,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 
-import { authenticationService } from './services/authentication.service';
+import { authenticationService } from './services/';
 import { PrivateRoute } from './components/PrivateRoute/PrivateRoute';
 import { GalleryView } from './views/GalleryView';
 import { LoginView } from './views/LoginView';
@@ -29,11 +29,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface IUser {
-  name: string;
-  accessToken: string;
-}
-
 const AdapterLink = React.forwardRef<HTMLAnchorElement, LinkProps>((props, ref) => (
   <Link innerRef={ref as any} {...props} />
 ));
@@ -43,14 +38,15 @@ const App: React.FC = () => {
   const classes = useStyles();
 
   useEffect(() => {
-    authenticationService.currentUser.subscribe((user) => setCurrentUser(user));
+    const subscription = authenticationService.currentUser.subscribe((user) =>
+      setCurrentUser(user)
+    );
+    return () => subscription.unsubscribe();
   }, []);
 
   const doLogout = () => {
     authenticationService.logout();
   };
-
-  console.log(currentUser);
 
   return (
     <Fragment>

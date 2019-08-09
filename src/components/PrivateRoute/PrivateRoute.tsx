@@ -1,7 +1,7 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
 
-import { authenticationService } from '../../services/authentication.service';
+import { authenticationService } from '../../services/';
 import { RouteProps } from 'react-router';
 
 interface IProps extends RouteProps {
