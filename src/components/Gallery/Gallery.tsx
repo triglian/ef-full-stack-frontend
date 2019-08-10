@@ -112,6 +112,7 @@ const Gallery: React.FC<IProps> = ({ imageData }: IProps) => {
           isScrolling={isScrolling}
           onScroll={onChildScroll}
           scrollTop={scrollTop}
+          overscanByPixels={300}
           cellCount={list.length}
           cellMeasurerCache={cache}
           cellPositioner={cellPositioner}
