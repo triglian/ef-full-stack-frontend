@@ -1,10 +1,20 @@
 # ef-full-stack-frontend
 
-This is the frontend for the EF Full-stack home assignment.
+This is the frontend for the EF Full-stack home assignment. It was bootstrapped with the TypeScript version [Create React App](https://github.com/facebook/create-react-app).
 
-## choice of stack
+It uses [Material-UI](https://material-ui.com/) for the user interface. To display an infinite list of images while keeping the memory frontent lowm we use the [Masonry](https://bvaughn.github.io/react-virtualized/#/components/Masonry) component from [react-virtualized](https://github.com/bvaughn/react-virtualized). I used Javascript to make the columns of the list responsive based on the `window.innerWidth`. Right now, each image thumbnail has a width of `220px` but it would be easy to adopt the design to different requirements. For example we could display a single column for mobiles with image width equal to the screen width minus some style padding.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+We use the `srcset` attribute in `<img>` elements to set thumbnails depending on the pixel density of the screen. This will save bandwidth on lower pixel density screens and offer better image quality (at the cost of more bandwidth) for higer pixel density screens.
+
+We use a custom service worker to cache not only the App shell but also the response from the API -- both the `api/list` route and the static image responses -- for better user experience. Since these are opaque requests with different levels of significance for the functionality of our App we use a NetworkFirst strategy fot the `api/list` and CacheFist strategy for the images with an expiration day. To run the service worker version first build the app using `npm run build` and then serve the app with a static server from the build dir.
+
+Finally, From the project requirements it's not very clear if clicking on an image should display it or navigate the browser to the Picsum image page. Both are easy to implement either with a new view in React or with an anchor tag that navigates to the Picsum image.
+
+## API
+
+This frontend uses the express.js API server of [ef-full-stack-backend](https://github.com/triglian/ef-full-stack-backend). The first iteration of this API was just wrapping the Piscum API, the the latest augments it with thumbnail sized versions of the images for better bandwidth utilization.
+
+## Dev
 
 ### Available Scripts
 
@@ -22,6 +32,14 @@ You will also see any lint errors in the console.
 
 Launches the test runner in the interactive watch mode.<br>
 See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+
+#### `npm run build-sw`
+
+Builds a custom service worker using [Workbox](https://developers.google.com/web/tools/workbox/). Run this after `react-scripts build`.
+
+#### `npm run clean-cra-sw`
+
+Cleans up the default CRA Service Worker. Run this after `react-scripts build`.
 
 #### `npm run build`
 

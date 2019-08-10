@@ -8,6 +8,8 @@ interface IImageItem {
   width: number;
   height: number;
   author: string;
+  thumbnail_url?: string;
+  thumbnail_2x_url?: string;
 }
 
 interface LoginFormValues {

@@ -26,9 +26,24 @@ if ('function' === typeof importScripts) {
       })
     );
 
+    // API
     workbox.routing.registerRoute(
       'http://localhost:8080/api/list',
       new workbox.strategies.NetworkFirst()
+    );
+
+    // CORS images
+    workbox.routing.registerRoute(
+      /^http:\/\/localhost:8080.*\.(?:png|gif|jpg|jpeg)$/,
+      new workbox.strategies.CacheFirst({
+        cacheName: 'images',
+        plugins: [
+          new workbox.expiration.Plugin({
+            maxEntries: 60,
+            maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+          }),
+        ],
+      })
     );
   } else {
     console.log('Workbox could not be loaded. No Offline support');

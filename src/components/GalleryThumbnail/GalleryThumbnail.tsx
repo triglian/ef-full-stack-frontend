@@ -18,7 +18,7 @@ const useStyles = makeStyles({
 });
 
 const GalleryThumbnail: React.FC<IProps> = ({ imageDetails }: IProps) => {
-  const { download_url, width, height, author } = imageDetails;
+  const { download_url, width, height, author, thumbnail_url, thumbnail_2x_url } = imageDetails;
   const classes = useStyles();
   const [loaded, setLoaded] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -39,6 +39,10 @@ const GalleryThumbnail: React.FC<IProps> = ({ imageDetails }: IProps) => {
       }
     }
   }, [imageRef]);
+
+  const src = thumbnail_url ? thumbnail_url : download_url;
+  let srcSet = thumbnail_url ? thumbnail_url : '';
+  srcSet = thumbnail_2x_url ? `${srcSet}, ${thumbnail_2x_url} 2x` : srcSet;
   return (
     <figure style={{ margin: 0 }}>
       <div
@@ -51,7 +55,8 @@ const GalleryThumbnail: React.FC<IProps> = ({ imageDetails }: IProps) => {
         {!loaded && <GalleryThumbnailSkeleton />}
         <img
           ref={imageRef}
-          src={download_url}
+          srcSet={srcSet}
+          src={src}
           style={{
             opacity: loaded ? 1 : 0,
             height: height,
