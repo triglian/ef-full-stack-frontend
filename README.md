@@ -2,17 +2,21 @@
 
 This is the frontend for the EF Full-stack home assignment. It was bootstrapped with the TypeScript version [Create React App](https://github.com/facebook/create-react-app).
 
-It uses [Material-UI](https://material-ui.com/) for the user interface. To display an infinite list of images while keeping the memory frontent lowm we use the [Masonry](https://bvaughn.github.io/react-virtualized/#/components/Masonry) component from [react-virtualized](https://github.com/bvaughn/react-virtualized). I used Javascript to make the columns of the list responsive based on the `window.innerWidth`. Right now, each image thumbnail has a width of `220px` but it would be easy to adopt the design to different requirements. For example we could display a single column for mobiles with image width equal to the screen width minus some style padding.
+It uses [Material-UI](https://material-ui.com/) for the user interface. To display an infinite list of images while keeping the memory frontent lowm we use the [Masonry](https://bvaughn.github.io/react-virtualized/#/components/Masonry) component from [react-virtualized](https://github.com/bvaughn/react-virtualized). I used Javascript to make the columns of the list responsive based on the `window.innerWidth`. Right now, each image thumbnail has a width of `220px` but it would be easy to adopt the design to different requirements. For example we could display a single column for mobiles with image width equal to the screen width minus some style padding. I also display a **skeleton screen** for each image since they UX is perceived as [faster](https://uxdesign.cc/what-you-should-know-about-skeleton-screens-a820c45a571a) than with spinners.
 
-We use the `srcset` attribute in `<img>` elements to set thumbnails depending on the pixel density of the screen. This will save bandwidth on lower pixel density screens and offer better image quality (at the cost of more bandwidth) for higer pixel density screens.
+We use the `srcset` attribute in `<img>` elements to set thumbnails depending on the pixel density of the screen. This will save bandwidth on lower pixel density screens and offer better image quality (at the cost of more bandwidth) for higer pixel density screens. I decided not to use the [`loading=lazy`](https://addyosmani.com/blog/lazy-loading/) `<img>` attribute since Masonry only creates the `<img>` elements when there are in (or about to enter)the viewport. Moreover, it's only supported in Chrome for now.
 
 We use a custom service worker to cache not only the App shell but also the response from the API -- both the `api/list` route and the static image responses -- for better user experience. Since these are opaque requests with different levels of significance for the functionality of our App we use a NetworkFirst strategy fot the `api/list` and CacheFist strategy for the images with an expiration day. To run the service worker version first build the app using `npm run build` and then serve the app with a static server from the build dir.
+
+**Note**: The current implementation doesn't notify the user that the app works offline. It also doesn't notify if there is an updated service worker. Finally login doesn't detect when the app is online so it will fail. I didn't implement these feature to save development time but they are necessary for a production app.
 
 Finally, From the project requirements it's not very clear if clicking on an image should display it or navigate the browser to the Picsum image page. Both are easy to implement either with a new view in React or with an anchor tag that navigates to the Picsum image.
 
 ## API
 
 This frontend uses the express.js API server of [ef-full-stack-backend](https://github.com/triglian/ef-full-stack-backend). The first iteration of this API was just wrapping the Piscum API, the the latest augments it with thumbnail sized versions of the images for better bandwidth utilization.
+
+**Important**: Don't forget to set the `CORS_DOMAIN` env variable of the backend to the domain of the frontend.
 
 ## Dev
 
